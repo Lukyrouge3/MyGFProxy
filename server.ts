@@ -1,81 +1,34 @@
+// deno-lint-ignore-file no-unversioned-import no-import-prefix
 import { Buffer } from "node:buffer";
 import forge from "npm:node-forge";
 import { Base } from "./base.ts";
 import { forgeToU8, u8ToForgeBytes } from "./utils.ts";
-import { RC4 } from "./rc4.ts";
 import { Logger } from "./logger.ts";
+import { MemoryStream } from "./memoryStream.ts";
 
 const logger = new Logger("Server");
 
 export class Server extends Base {
-
-	private buffer: Uint8Array | null = null;
-	private buffer_offset: number = 0;
-
-	private message_count: number = 0;
-	private public_key: forge.pki.rsa.PublicKey;
-
-	public rc4_decrypt: RC4;
-	public rc4_encrypt: RC4;
+	private public_key: forge.pki.rsa.PublicKey | undefined;
 
 	constructor() {
 		super();
 	}
 
-	async packet_handle(data: Uint8Array): Promise<Uint8Array | null> {
-		const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-		logger.debug("Received packet data:", data);
+	protected packet_handle(data: MemoryStream): Uint8Array {
+		const data_copy = data.getBuffer();
 
-		if (this.message_count === 0) {
-			this.message_count++;
-			return this.handle_initial_packet(data, view);
-		}
-
-		const packet_size = view.getUint16(0, true);
-		if (this.buffer === null) {
-			// We start a new buffer
-			this.buffer = new Uint8Array(packet_size);
-			this.buffer_offset = 0;
-
-			data = data.subarray(2); // Remove size bytes
-		}
-
-		this.buffer.set(data, 0);
-		this.buffer_offset += data.length;
-
-
-		if (this.buffer_offset < packet_size) {
-			logger.debug("Packet not complete yet, waiting for more data.");
-			return null;
-		}
-
-		// Decrypt
-		const decrypted_data = this.rc4_decrypt.update(this.buffer);
-		logger.debug("Received decrypted packet data:", decrypted_data);
-		const handled_data = this.handle_raw_packet(decrypted_data);
-
-		// Encrypt
-		const encrypted_data = this.rc4_encrypt.update(handled_data);
-
-		const packet = new Uint8Array(encrypted_data.length + 2);
-		const packet_view = new DataView(packet.buffer);
-		packet_view.setUint16(0, encrypted_data.length, true);
-		packet.set(encrypted_data, 2);
-
-		this.message_count++;
-		return packet;
-	}
-
-	private handle_raw_packet(data: Uint8Array): Uint8Array {
-		const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-
-		const command_id = view.getUint16(0, true);
+		const command_id = data.readUint16(0, true);
 		logger.info(`Handling packet with Command ID: ${command_id}`);
 
-		return data;
+		return data_copy;
 	}
 
-	private handle_initial_packet(data: Uint8Array, view: DataView): Uint8Array {
+	public handle_initial_packet(stream: MemoryStream): Uint8Array {
+
+		const data = stream.read(stream.length());
+		const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+
 		logger.info("Handling initial packet from server.");
 		const rsa_public_key_modulus_size = view.getUint32(0, true);
 		const rsa_public_key_modulus = data.subarray(8, 8 + rsa_public_key_modulus_size);
@@ -116,6 +69,10 @@ export class Server extends Base {
 	}
 
 	public encrypt_with_server_key(data: Uint8Array): Uint8Array {
+		if (!this.public_key) {
+			throw new Error("Server public key not initialized.");
+		}
+
 		// convert incoming bytes to a binary string for forge.encrypt
 		const encryptedStr = this.public_key.encrypt(u8ToForgeBytes(data), "RSAES-PKCS1-V1_5");
 		// convert the encrypted binary string back to bytes

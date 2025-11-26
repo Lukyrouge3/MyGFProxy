@@ -1,15 +1,12 @@
-import forge from "npm:node-forge";
-import { Buffer } from "node:buffer";
 import { Server } from "./server.ts";
 import { Client } from "./client.ts";
+import { MemoryStream } from "./memoryStream.ts";
 
 // proxy.ts
 const LISTEN_PORT = 6969;
 const TARGET_HOST = "login.en.dj.x-legend.com.tw";
 const TARGET_PORT = 6545;
 
-let server_rsa;
-let server_message_count = 0;
 const serv = new Server();
 const clie = new Client();
 
@@ -39,20 +36,51 @@ async function pump(src: Deno.Conn, dst: Deno.Conn, is_from_server = false) {
 			break;
 		}
 
+		const stream = new MemoryStream(n);
+		stream.write(buf.subarray(0, n));
 
-		// Here you can inspect the bytes:
-		// console.log(new Date(), is_from_server ? "Server -> Client" : "Client -> Server", buf.subarray(0, n));
+		console.log(`Read ${n} bytes from ${is_from_server ? "server" : "client"}`);
+		console.log(stream.getBuffer());
 
-		let response;
-		if (is_from_server) {
-			response = await serv.packet_handle(buf.subarray(0, n));
-		} else {
-			response = await clie.packet_handle(buf.subarray(0, n));
+		if (is_from_server && serv.message_count === 0) {
+			await dst.write(serv.handle_initial_packet(stream));
+			serv.message_count++;
+			continue;
+		}
+		if (!is_from_server && clie.message_count === 0) {
+			await dst.write(clie.handle_initial_packet(stream.read(stream.length())));
+			clie.message_count++;
+			continue;
 		}
 
-		if (response !== null) {
-			await dst.write(response);
-			console.log("Sent response of length", response.length);
+		let packet = new MemoryStream(0);
+		let packet_size = 0;
+		while (stream.length() > 0) {
+			console.log(packet.getBuffer(), packet.length(), stream.getBuffer());
+			if (packet.length() == 0) {
+				// It's a new packet
+				packet_size = stream.readUint16(0, true);
+				console.log(`Expecting packet of size ${packet_size} bytes`);
+			}
+
+			packet.write(stream.read(packet_size - packet.length()));
+			console.log(`Current packet length: ${packet.length()} / ${packet_size} bytes`);
+			if (packet.length() == packet_size) {
+				console.log(`Completed packet of size ${packet_size} bytes`);
+				let response;
+				if (is_from_server) {
+					response = serv.handle_raw_packet(packet);
+				} else {
+					response = clie.handle_raw_packet(packet);
+				}
+
+				if (response !== null) {
+					await dst.write(response);
+				}
+
+				packet = new MemoryStream(0);
+				packet_size = 0;
+			}
 		}
 	}
 }
