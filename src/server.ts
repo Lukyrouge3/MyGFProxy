@@ -1,14 +1,14 @@
 // deno-lint-ignore-file no-unversioned-import no-import-prefix
 import { Buffer } from "node:buffer";
 import forge from "npm:node-forge";
-import { Base } from "./base.ts";
-import { forgeToU8, u8ToForgeBytes } from "./utils.ts";
-import { Logger } from "./logger.ts";
-import { MemoryStream } from "./memoryStream.ts";
+import { ProxyBase } from "./io/proxyBase.ts";
+import { forgeToU8, u8ToForgeBytes } from "./utils/utils.ts";
+import { Logger } from "./utils/logger.ts";
+import { MemoryStream } from "./io/memoryStream.ts";
 
 const logger = new Logger("Server");
 
-export class Server extends Base {
+export class Server extends ProxyBase {
 	private public_key: forge.pki.rsa.PublicKey | undefined;
 
 	constructor() {
@@ -20,6 +20,8 @@ export class Server extends Base {
 
 		const command_id = data.readUint16(0, true);
 		logger.info(`Handling packet with Command ID: ${command_id}`);
+
+		Deno.writeFileSync(`bins/server_command_${command_id}_packet.bin`, data_copy);
 
 		return data_copy;
 	}
@@ -33,14 +35,14 @@ export class Server extends Base {
 		const rsa_public_key_modulus_size = view.getUint32(0, true);
 		const rsa_public_key_modulus = data.subarray(8, 8 + rsa_public_key_modulus_size);
 		// console.log("RSA Public Key Modulus:", rsa_public_key_modulus);
-		Deno.writeFileSync("server_rsa_modulus.bin", rsa_public_key_modulus);
+		// Deno.writeFileSync("server_rsa_modulus.bin", rsa_public_key_modulus);
 
 		const exponent_size = view.getUint32(4, true);
 		const exponent = data.subarray(8 + rsa_public_key_modulus_size, 8 + rsa_public_key_modulus_size + exponent_size);
 		// console.log("RSA Public Key Exponent:", exponent);
 		// Deno.writeFileSync("server_rsa_exponent.bin", exponent);
 
-		Deno.writeFileSync("server_rsa_exponent.bin", exponent);
+		// Deno.writeFileSync("server_rsa_exponent.bin", exponent);
 
 		const nBig = new forge.jsbn.BigInteger(Buffer.from(rsa_public_key_modulus).toString("hex"), 16);
 		const eBig = new forge.jsbn.BigInteger(Buffer.from(exponent).toString("hex"), 16);

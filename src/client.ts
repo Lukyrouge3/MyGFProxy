@@ -1,12 +1,12 @@
-import { Base } from "./base.ts";
+import { ProxyBase } from "./io/proxyBase.ts";
 import { serv } from "./main.ts";
-import { RC4 } from "./rc4.ts";
-import { Logger } from "./logger.ts";
-import { MemoryStream } from "./memoryStream.ts";
+import { RC4 } from "./utils/rc4.ts";
+import { Logger } from "./utils/logger.ts";
+import { MemoryStream } from "./io/memoryStream.ts";
 
 const logger = new Logger("Client");
 
-export class Client extends Base {
+export class Client extends ProxyBase {
 
 	constructor() {
 		super();
@@ -17,7 +17,7 @@ export class Client extends Base {
 
 		const command_id = data.readUint16(0, true);
 		logger.info(`Handling packet with Command ID: ${command_id}`);
-
+		Deno.writeFileSync(`bins/client_command_${command_id}_packet.bin`, data_copy);
 		return data_copy;
 	}
 

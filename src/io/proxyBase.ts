@@ -1,16 +1,16 @@
 import { Buffer } from "node:buffer";
 import forge from "npm:node-forge";
 import { MemoryStream } from "./memoryStream.ts";
-import { RC4 } from "./rc4.ts";
-import { Logger } from "./logger.ts";
+import { RC4 } from "../utils/rc4.ts";
+import { Logger } from "../utils/logger.ts";
 
 
-export abstract class Base {
+export abstract class ProxyBase {
 
 	protected proxy_keys: forge.pki.rsa.KeyPair;
 	public rc4_decrypt: RC4 | undefined;
 	public rc4_encrypt: RC4 | undefined;
-	protected logger = new Logger("Base");
+	protected logger = new Logger("ProxyBase");
 	public message_count: number = 0;
 
 	constructor() {

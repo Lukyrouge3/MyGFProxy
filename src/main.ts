@@ -1,6 +1,6 @@
 import { Server } from "./server.ts";
 import { Client } from "./client.ts";
-import { MemoryStream } from "./memoryStream.ts";
+import { MemoryStream } from "./io/memoryStream.ts";
 
 // proxy.ts
 const LISTEN_PORT = 6969;
@@ -39,9 +39,6 @@ async function pump(src: Deno.Conn, dst: Deno.Conn, is_from_server = false) {
 		const stream = new MemoryStream(n);
 		stream.write(buf.subarray(0, n));
 
-		console.log(`Read ${n} bytes from ${is_from_server ? "server" : "client"}`);
-		console.log(stream.getBuffer());
-
 		if (is_from_server && serv.message_count === 0) {
 			await dst.write(serv.handle_initial_packet(stream));
 			serv.message_count++;
@@ -56,17 +53,13 @@ async function pump(src: Deno.Conn, dst: Deno.Conn, is_from_server = false) {
 		let packet = new MemoryStream(0);
 		let packet_size = 0;
 		while (stream.length() > 0) {
-			console.log(packet.getBuffer(), packet.length(), stream.getBuffer());
 			if (packet.length() == 0) {
 				// It's a new packet
 				packet_size = stream.readUint16(0, true);
-				console.log(`Expecting packet of size ${packet_size} bytes`);
 			}
 
 			packet.write(stream.read(packet_size - packet.length()));
-			console.log(`Current packet length: ${packet.length()} / ${packet_size} bytes`);
 			if (packet.length() == packet_size) {
-				console.log(`Completed packet of size ${packet_size} bytes`);
 				let response;
 				if (is_from_server) {
 					response = serv.handle_raw_packet(packet);
