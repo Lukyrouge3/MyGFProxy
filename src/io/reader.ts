@@ -53,4 +53,23 @@ export class MemoryReader {
 	public get currentOffset(): number {
 		return this.offset;
 	}
+
+	public length(): number {
+		return this.buffer.length - this.offset;
+	}
+
+	public read(length: number): Uint8Array {
+		const data = this.buffer.subarray(this.offset, this.offset + length);
+		this.offset += length;
+		return data;
+	}
+
+	public copy(): MemoryReader {
+		const newReader = new MemoryReader(this.buffer.subarray(this.offset, this.buffer.length));
+		return newReader;
+	}
+
+	public getBuffer(): Uint8Array {
+		return this.buffer.subarray(this.offset, this.buffer.length);
+	}
 }

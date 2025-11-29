@@ -4,7 +4,7 @@ import forge from "npm:node-forge";
 import { ProxyBase } from "./io/proxyBase.ts";
 import { forgeToU8, u8ToForgeBytes } from "./utils/utils.ts";
 import { Logger } from "./utils/logger.ts";
-import { MemoryStream } from "./io/memoryStream.ts";
+import { MemoryReader } from "./io/reader.ts";
 
 const logger = new Logger("Server");
 
@@ -15,18 +15,18 @@ export class Server extends ProxyBase {
 		super();
 	}
 
-	protected packet_handle(data: MemoryStream): Uint8Array {
-		const data_copy = data.getBuffer();
+	protected packet_handle(data: MemoryReader): Uint8Array {
+		const data_copy = data.copy();
 
-		const command_id = data.readUint16(0, true);
+		const command_id = data.readUint16();
 		logger.info(`Handling packet with Command ID: ${command_id}`);
 
-		Deno.writeFileSync(`bins/server_command_${command_id}_packet.bin`, data_copy);
+		Deno.writeFileSync(`bins/server_command_${command_id}_packet.bin`, data_copy.getBuffer());
 
-		return data_copy;
+		return data_copy.getBuffer();
 	}
 
-	public handle_initial_packet(stream: MemoryStream): Uint8Array {
+	public handle_initial_packet(stream: MemoryReader): Uint8Array {
 
 		const data = stream.read(stream.length());
 		const view = new DataView(data.buffer, data.byteOffset, data.byteLength);

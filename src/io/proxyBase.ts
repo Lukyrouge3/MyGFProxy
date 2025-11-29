@@ -1,8 +1,7 @@
-import { Buffer } from "node:buffer";
 import forge from "npm:node-forge";
-import { MemoryStream } from "./memoryStream.ts";
 import { RC4 } from "../utils/rc4.ts";
 import { Logger } from "../utils/logger.ts";
+import { MemoryReader } from "./reader.ts";
 
 
 export abstract class ProxyBase {
@@ -17,7 +16,7 @@ export abstract class ProxyBase {
 		this.proxy_keys = forge.pki.rsa.generateKeyPair({ bits: 2048 });
 	}
 
-	public handle_raw_packet(data: MemoryStream): Uint8Array | null {
+	public handle_raw_packet(data: MemoryReader): Uint8Array | null {
 		// this.logger.debug("Received packet data:", data.getBuffer());
 
 		if (!this.rc4_decrypt || !this.rc4_encrypt) {
@@ -29,8 +28,7 @@ export abstract class ProxyBase {
 		const decrypted_data = this.rc4_decrypt.update(data.read(data.length()));
 		this.logger.debug("Received decrypted packet data:", decrypted_data);
 
-		const decrypted_stream = new MemoryStream(decrypted_data.length);
-		decrypted_stream.write(decrypted_data);
+		const decrypted_stream = new MemoryReader(decrypted_data.subarray(0, decrypted_data.length));
 		const handled_data = this.packet_handle(decrypted_stream);
 
 		// Encrypt
@@ -47,5 +45,5 @@ export abstract class ProxyBase {
 
 	}
 
-	protected abstract packet_handle(data: MemoryStream): Uint8Array;
+	protected abstract packet_handle(data: MemoryReader): Uint8Array;
 }

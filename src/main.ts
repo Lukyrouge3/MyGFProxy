@@ -1,6 +1,6 @@
 import { Server } from "./server.ts";
 import { Client } from "./client.ts";
-import { MemoryStream } from "./io/memoryStream.ts";
+import { MemoryReader } from "./io/reader.ts";
 
 // proxy.ts
 const LISTEN_PORT = 6969;
@@ -36,8 +36,7 @@ async function pump(src: Deno.Conn, dst: Deno.Conn, is_from_server = false) {
 			break;
 		}
 
-		const stream = new MemoryStream(n);
-		stream.write(buf.subarray(0, n));
+		const stream = new MemoryReader(buf.subarray(0, n));
 
 		if (is_from_server && serv.message_count === 0) {
 			await dst.write(serv.handle_initial_packet(stream));
@@ -50,28 +49,32 @@ async function pump(src: Deno.Conn, dst: Deno.Conn, is_from_server = false) {
 			continue;
 		}
 
-		let packet = new MemoryStream(0);
+		let packet = new Uint8Array(0);
 		let packet_size = 0;
 		while (stream.length() > 0) {
-			if (packet.length() == 0) {
+			if (packet.length == 0) {
 				// It's a new packet
-				packet_size = stream.readUint16(0, true);
+				packet_size = stream.readUint16();
 			}
 
-			packet.write(stream.read(packet_size - packet.length()));
-			if (packet.length() == packet_size) {
+			const chunk = stream.read(packet_size - packet.length);
+			const new_packet = new Uint8Array(packet.length + chunk.length);
+			new_packet.set(packet, 0);
+			new_packet.set(chunk, packet.length);
+			packet = new_packet;
+			if (packet.length == packet_size) {
 				let response;
 				if (is_from_server) {
-					response = serv.handle_raw_packet(packet);
+					response = serv.handle_raw_packet(new MemoryReader(packet));
 				} else {
-					response = clie.handle_raw_packet(packet);
+					response = clie.handle_raw_packet(new MemoryReader(packet));
 				}
 
 				if (response !== null) {
 					await dst.write(response);
 				}
 
-				packet = new MemoryStream(0);
+				packet = new Uint8Array(0);
 				packet_size = 0;
 			}
 		}
