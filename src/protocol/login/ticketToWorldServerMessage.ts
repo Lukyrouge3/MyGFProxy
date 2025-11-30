@@ -1,4 +1,5 @@
 import { MemoryReader } from "../../io/reader.ts";
+import { MemoryWriter } from "../../io/writer.ts";
 import { Message } from "../message.ts";
 
 export class TicketToWorldServerMessage extends Message {
@@ -18,7 +19,15 @@ export class TicketToWorldServerMessage extends Message {
 	}
 
 	override serialize(): Uint8Array {
-		throw new Error("Method not implemented.");
+		const writer = new MemoryWriter();
+		writer.writeUint16(TicketToWorldServerMessage.id);
+		writer.writeUint16(0); // Unknown / Padding
+		writer.writeUint16(0); // Unknown / Padding
+		writer.write(new Uint8Array(this.self_ip.split(".").map(octet => parseInt(octet, 10))));
+		writer.write(new Uint8Array(this.server_ip.split(".").map(octet => parseInt(octet, 10))));
+		writer.writeUint16(this.server_port);
+		writer.write(this.ticket);
+		return writer.getBuffer();
 	}
 
 	override deserialize(data: MemoryReader): void {

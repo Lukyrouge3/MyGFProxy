@@ -1,40 +1,26 @@
 // deno-lint-ignore-file no-unversioned-import no-import-prefix
 import { Buffer } from "node:buffer";
 import forge from "npm:node-forge";
-import { ProxyBase } from "./io/proxyBase.ts";
-import { forgeToU8, u8ToForgeBytes } from "./utils/utils.ts";
-import { Logger } from "./utils/logger.ts";
-import { MemoryReader } from "./io/reader.ts";
-import { login_protocol_messages } from "./protocol/protocol.ts";
+import { ProxyBase } from "./proxyBase.ts";
+import { forgeToU8, u8ToForgeBytes } from "../utils/utils.ts";
+import { Logger } from "../utils/logger.ts";
+import { MemoryReader } from "../io/reader.ts";
+import { Message } from "../protocol/message.ts";
 
-const logger = new Logger("Server");
+const logger = new Logger("ProxyServer");
 
-export class Server extends ProxyBase {
+export class ProxyServer extends ProxyBase {
+
 	private public_key: forge.pki.rsa.PublicKey | undefined;
 
 	constructor() {
 		super();
 	}
 
-	protected packet_handle(data: MemoryReader): Uint8Array {
-		const data_copy = data.copy();
+	protected override handle_message(message: Message): Uint8Array | null {
 
-		const command_id = data.readUint16();
 
-		Deno.writeFileSync(`bins/server_command_${command_id}_packet.bin`, data_copy.getBuffer());
-
-		if (login_protocol_messages[command_id]) {
-			const MessageCtor = login_protocol_messages[command_id]!;
-			const message = new MessageCtor();
-
-			message.deserialize(data);
-
-			logger.info(`Handling message: ${message.toString()}`);
-		} else {
-			logger.info(`Unknown packet with Command ID: ${command_id}`);
-		}
-
-		return data_copy.getBuffer();
+		return null;
 	}
 
 	public handle_initial_packet(stream: MemoryReader): Uint8Array {

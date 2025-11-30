@@ -12,7 +12,7 @@ import { Message } from "./message.ts";
 // `id` property on the constructor lets callers access the message id if needed.
 export type MessageConstructor = { new(): Message; id: number };
 
-export const login_protocol_messages: Record<number, MessageConstructor> = {
+export const protocol_messages: Record<number, MessageConstructor> = {
 	2: SelectWorldServerMessage,
 	3: HelloClientMessage,
 	4: HelloServerMessage,
