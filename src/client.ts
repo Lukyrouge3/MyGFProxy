@@ -17,7 +17,6 @@ export class Client extends ProxyBase {
 		const data_copy = data.getBuffer();
 
 		const command_id = data.readUint16();
-		logger.info(`Handling packet with Command ID: ${command_id}`);
 		Deno.writeFileSync(`bins/client_command_${command_id}_packet.bin`, data_copy);
 
 		if (login_protocol_messages[command_id]) {
@@ -26,7 +25,9 @@ export class Client extends ProxyBase {
 
 			message.deserialize(data);
 
-			logger.info(`Deserialized message: ${message.toString()}`);
+			logger.info(`Handling message: ${message.toString()}`);
+		} else {
+			logger.info(`Unknown packet with Command ID: ${command_id}`);
 		}
 		return data_copy;
 	}
@@ -34,7 +35,7 @@ export class Client extends ProxyBase {
 	public handle_initial_packet(data: Uint8Array): Uint8Array {
 		logger.info("Handling initial packet from client.");
 		const decrypted_rc4_key = serv.decrypt_with_proxy_key(data);
-		logger.debug("Decrypted RC4 Key from client:", decrypted_rc4_key);
+		// logger.debug("Decrypted RC4 Key from client:", decrypted_rc4_key);
 		this.rc4_decrypt = new RC4(decrypted_rc4_key);
 		this.rc4_encrypt = new RC4(decrypted_rc4_key);
 
@@ -43,7 +44,7 @@ export class Client extends ProxyBase {
 
 		const encrypted_rc4_key = serv.encrypt_with_server_key(decrypted_rc4_key);
 
-		logger.debug("Encrypted RC4 Key to send to server:", encrypted_rc4_key);
+		// logger.debug("Encrypted RC4 Key to send to server:", encrypted_rc4_key);
 		return encrypted_rc4_key;
 	}
 }

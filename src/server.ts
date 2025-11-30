@@ -20,7 +20,6 @@ export class Server extends ProxyBase {
 		const data_copy = data.copy();
 
 		const command_id = data.readUint16();
-		logger.info(`Handling packet with Command ID: ${command_id}`);
 
 		Deno.writeFileSync(`bins/server_command_${command_id}_packet.bin`, data_copy.getBuffer());
 
@@ -30,7 +29,9 @@ export class Server extends ProxyBase {
 
 			message.deserialize(data);
 
-			logger.info(`Deserialized message: ${message.toString()}`);
+			logger.info(`Handling message: ${message.toString()}`);
+		} else {
+			logger.info(`Unknown packet with Command ID: ${command_id}`);
 		}
 
 		return data_copy.getBuffer();

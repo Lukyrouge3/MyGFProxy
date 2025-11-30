@@ -26,7 +26,7 @@ export abstract class ProxyBase {
 
 		// Decrypt
 		const decrypted_data = this.rc4_decrypt.update(data.read(data.length()));
-		this.logger.debug("Received decrypted packet data:", decrypted_data);
+		// this.logger.debug("Received decrypted packet data:", decrypted_data);
 
 		const decrypted_stream = new MemoryReader(decrypted_data.subarray(0, decrypted_data.length));
 		const handled_data = this.packet_handle(decrypted_stream);

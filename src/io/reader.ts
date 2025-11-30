@@ -19,7 +19,7 @@ export class MemoryReader {
 		return value;
 	}
 
-	public readUInt8(): number {
+	public readUint8(): number {
 		const value = this.view.getUint8(0);
 		this.offset += 1;
 		return value;
@@ -71,5 +71,11 @@ export class MemoryReader {
 
 	public getBuffer(): Uint8Array {
 		return this.buffer.subarray(this.offset, this.buffer.length);
+	}
+
+	public readUint32(littleEndian: boolean = true): number {
+		const value = this.view.getUint32(0, littleEndian);
+		this.offset += 4;
+		return value;
 	}
 }
