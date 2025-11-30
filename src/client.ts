@@ -3,6 +3,7 @@ import { serv } from "./main.ts";
 import { RC4 } from "./utils/rc4.ts";
 import { Logger } from "./utils/logger.ts";
 import { MemoryReader } from "./io/reader.ts";
+import { login_protocol_messages } from "./protocol/protocol.ts";
 
 const logger = new Logger("Client");
 
@@ -18,6 +19,15 @@ export class Client extends ProxyBase {
 		const command_id = data.readUint16();
 		logger.info(`Handling packet with Command ID: ${command_id}`);
 		Deno.writeFileSync(`bins/client_command_${command_id}_packet.bin`, data_copy);
+
+		if (login_protocol_messages[command_id]) {
+			const MessageCtor = login_protocol_messages[command_id]!;
+			const message = new MessageCtor();
+
+			message.deserialize(data);
+
+			logger.info(`Deserialized message: ${message.toString()}`);
+		}
 		return data_copy;
 	}
 

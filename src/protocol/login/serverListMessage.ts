@@ -17,7 +17,7 @@ export class ServerListMessage extends Message {
 	}
 
 	override toString(): string {
-		return `ServerListMessage(Servers: [${this.servers.join(", ")}], LastSelectedServerID: ${this.last_selected_server_id})`;
+		return `ServerListMessage(Servers: [\n\t${this.servers.join(",\n\t")}\n], LastSelectedServerID: ${this.last_selected_server_id})`;
 	}
 }
 

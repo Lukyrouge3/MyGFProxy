@@ -1,6 +1,5 @@
 import { MemoryReader } from "../io/reader.ts";
 import { Serializable } from "../io/serializable.ts";
-import { ServerListMessage } from "./login/serverListMessage.ts";
 
 export abstract class Message extends Serializable {
 	public static id: number;
@@ -11,7 +10,3 @@ export abstract class Message extends Serializable {
 	 */
 	abstract override deserialize(data: MemoryReader): void;
 }
-
-export const login_protocol_messages: { [key: number]: typeof Message } = {
-	6: ServerListMessage
-};
