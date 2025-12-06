@@ -1,3 +1,4 @@
+import { Origin } from "../../generated/enums.ts";
 import { login_protocol_messages, MessageConstructor } from "../../protocol/protocol.ts";
 import { Logger } from "../../utils/logger.ts";
 import { Proxy } from "../proxy.ts";
@@ -13,11 +14,11 @@ export class LoginProxy extends Proxy {
 	protected override server: LoginProxyServer;
 	protected override message_mapping: Record<number, MessageConstructor> = login_protocol_messages;
 
-	constructor() {
-		super(LISTEN_PORT, TARGET_HOST, TARGET_PORT);
+	constructor(session_id: number) {
+		super(LISTEN_PORT, TARGET_HOST, TARGET_PORT, session_id);
 		this.logger = new Logger("LoginProxy");
 
-		this.server = new LoginProxyServer(new Logger("LoginProxyServer"), this.message_mapping, "bins/login");
-		this.client = new LoginProxyClient(new Logger("LoginProxyClient"), this.message_mapping, "bins/login");
+		this.server = new LoginProxyServer(new Logger("LoginProxyServer"), this.message_mapping, "bins/login", session_id, Origin.LOGIN_SERVER);
+		this.client = new LoginProxyClient(new Logger("LoginProxyClient"), this.message_mapping, "bins/login", session_id, Origin.LOGIN_CLIENT);
 	}
 }

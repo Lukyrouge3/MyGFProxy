@@ -7,13 +7,14 @@ import { Logger } from "../utils/logger.ts";
 import { MemoryReader } from "../io/reader.ts";
 import { Message } from "../protocol/message.ts";
 import { MessageConstructor } from "../protocol/protocol.ts";
+import { Origin } from "../generated/enums.ts";
 
 export class ProxyServer extends ProxyBase {
 
 	private public_key: forge.pki.rsa.PublicKey | undefined;
 
-	constructor(logger: Logger, message_mapping: Record<number, MessageConstructor>, bins_folder: string) {
-		super(logger, message_mapping, bins_folder + "/server");
+	constructor(logger: Logger, message_mapping: Record<number, MessageConstructor>, bins_folder: string, session_id: number, origin: Origin) {
+		super(logger, message_mapping, bins_folder + "/server", session_id, origin);
 	}
 
 	protected override handle_message(message: Message): Uint8Array | null {

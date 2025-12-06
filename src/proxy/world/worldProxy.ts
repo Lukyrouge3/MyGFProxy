@@ -1,3 +1,4 @@
+import { Origin } from "../../generated/enums.ts";
 import { world_protocol_messages } from "../../protocol/protocol.ts";
 import { Logger } from "../../utils/logger.ts";
 import { Proxy } from "../proxy.ts";
@@ -12,12 +13,12 @@ export class WorldProxy extends Proxy {
 
 	protected override server: WorldProxyServer;
 
-	constructor() {
-		super(WORLD_LISTEN_PORT, WORLD_TARGET_HOST, WORLD_TARGET_PORT);
+	constructor(session_id: number) {
+		super(WORLD_LISTEN_PORT, WORLD_TARGET_HOST, WORLD_TARGET_PORT, session_id);
 
 		this.logger = new Logger("WorldProxy");
 
-		this.server = new WorldProxyServer(new Logger("WorldProxyServer"), world_protocol_messages, "bins/world");
-		this.client = new WorldProxyClient(new Logger("WorldProxyClient"), world_protocol_messages, "bins/world");
+		this.server = new WorldProxyServer(new Logger("WorldProxyServer"), world_protocol_messages, "bins/world", session_id, Origin.WORLD_SERVER);
+		this.client = new WorldProxyClient(new Logger("WorldProxyClient"), world_protocol_messages, "bins/world", session_id, Origin.WORLD_CLIENT);
 	}
 }

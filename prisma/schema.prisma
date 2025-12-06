@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Session {
+	id 			Int      @id @default(autoincrement())
+	startedAt 	DateTime @default(now())
+
+	messages Message[]
+}
+
+model Message {
+	id Int @id @default(autoincrement())
+	command_id Int
+	session  	Session   @relation(fields: [sessionId], references: [id])
+	sessionId Int
+	order		 Int
+	name		 String
+	serializedContent Json?
+	content Bytes
+	origin Origin
+	timestamp DateTime @default(now())
+}
+
+enum Origin {
+	LOGIN_CLIENT
+	LOGIN_SERVER
+	WORLD_CLIENT
+	WORLD_SERVER
+	ZONE_CLIENT
+	ZONE_SERVER
+}

@@ -13,11 +13,13 @@ export class Proxy {
 	protected client: ProxyClient;
 	protected logger: Logger;
 	protected message_mapping: Record<number, MessageConstructor> = {};
+	protected session_id: number;
 
-	constructor(listen_port: number, host: string, port: number) {
+	constructor(listen_port: number, host: string, port: number, session_id: number) {
 		this.listen_port = listen_port;
 		this.server_host = host;
 		this.server_port = port;
+		this.session_id = session_id;
 
 		this.logger = new Logger("Proxy");
 

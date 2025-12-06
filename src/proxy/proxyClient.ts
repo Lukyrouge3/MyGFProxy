@@ -4,11 +4,12 @@ import { Logger } from "../utils/logger.ts";
 import { ProxyServer } from "./proxyServer.ts";
 import { Message } from "../protocol/message.ts";
 import { MessageConstructor } from "../protocol/protocol.ts";
+import { Origin } from "../generated/enums.ts";
 
 export class ProxyClient extends ProxyBase {
 
-	constructor(logger: Logger, message_mapping: Record<number, MessageConstructor>, bins_folder: string) {
-		super(logger, message_mapping, bins_folder + "/client");
+	constructor(logger: Logger, message_mapping: Record<number, MessageConstructor>, bins_folder: string, session_id: number, origin: Origin) {
+		super(logger, message_mapping, bins_folder + "/client", session_id, origin);
 	}
 
 	protected override handle_message(message: Message): Uint8Array | null {

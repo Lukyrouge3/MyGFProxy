@@ -5,6 +5,8 @@ import { Logger } from "../utils/logger.ts";
 import { MemoryReader } from "../io/reader.ts";
 import { MessageConstructor } from "../protocol/protocol.ts";
 import { Message } from "../protocol/message.ts";
+import { prisma } from "../utils/prisma.ts";
+import { Origin } from "../generated/enums.ts";
 
 export abstract class ProxyBase {
 
@@ -15,12 +17,16 @@ export abstract class ProxyBase {
 	public message_count: number = 0;
 	protected message_mapping: Record<number, MessageConstructor> = {};
 	protected bins_folder: string = "bins";
+	protected session_id: number;
+	protected origin: Origin;
 
-	constructor(logger: Logger, message_mapping: Record<number, MessageConstructor>, bins_folder: string = "bins") {
+	constructor(logger: Logger, message_mapping: Record<number, MessageConstructor>, bins_folder: string = "bins", session_id: number, origin: Origin) {
 		this.proxy_keys = forge.pki.rsa.generateKeyPair({ bits: 2048 });
 		this.logger = logger;
 		this.message_mapping = message_mapping;
 		this.bins_folder = bins_folder;
+		this.session_id = session_id;
+		this.origin = origin;
 	}
 
 	public handle_raw_packet(data: MemoryReader): Uint8Array | null {
@@ -39,13 +45,26 @@ export abstract class ProxyBase {
 
 		let handled_data = decrypted_stream.getBuffer();
 		const command_id = decrypted_stream.readUint16();
-		Deno.writeFileSync(`${this.bins_folder}/command_${command_id}_packet.bin`, decrypted_data);
+		// Deno.writeFileSync(`${this.bins_folder}/command_${command_id}_packet.bin`, decrypted_data);
+
 		if (this.message_mapping[command_id]) {
 			try {
 				const MessageCtor = this.message_mapping[command_id]!;
 				const message = new MessageCtor();
 
 				message.deserialize(decrypted_stream);
+
+				prisma.message.create({
+					data: {
+						name: message.constructor.name,
+						command_id,
+						sessionId: this.session_id,
+						content: decrypted_data,
+						origin: this.origin,
+						serializedContent: message,
+						order: this.message_count
+					}
+				});
 
 				this.logger.info(`Handling message: ${message.toString()}`);
 				const handled_message = this.handle_message(message);
@@ -58,6 +77,16 @@ export abstract class ProxyBase {
 			}
 		} else {
 			this.logger.info(`Unknown packet with Command ID: ${command_id}`);
+			prisma.message.create({
+				data: {
+					name: "UnknownMessage",
+					command_id,
+					sessionId: this.session_id,
+					content: decrypted_data,
+					origin: this.origin,
+					order: this.message_count
+				}
+			});
 		}
 		// Encrypt
 		const encrypted_data = this.rc4_encrypt.update(handled_data);
