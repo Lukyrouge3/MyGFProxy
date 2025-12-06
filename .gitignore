@@ -1,1 +1,1 @@
-bins/*.bin
+bins/**/*.bin

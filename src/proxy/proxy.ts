@@ -1,4 +1,6 @@
 import { MemoryReader } from "../io/reader.ts";
+import { MessageConstructor } from "../protocol/protocol.ts";
+import { Logger } from "../utils/logger.ts";
 import { ProxyClient } from "./proxyClient.ts";
 import { ProxyServer } from "./proxyServer.ts";
 
@@ -9,15 +11,18 @@ export class Proxy {
 	public server_port: number;
 	protected server: ProxyServer;
 	protected client: ProxyClient;
+	protected logger: Logger;
+	protected message_mapping: Record<number, MessageConstructor> = {};
 
 	constructor(listen_port: number, host: string, port: number) {
 		this.listen_port = listen_port;
 		this.server_host = host;
 		this.server_port = port;
 
-		this.server = new ProxyServer();
-		this.client = new ProxyClient();
+		this.logger = new Logger("Proxy");
 
+		this.server = new ProxyServer(this.logger, this.message_mapping, "bins");
+		this.client = new ProxyClient(this.logger, this.message_mapping, "bins");
 		// Start the async listener loop (constructor cannot be async)
 		this.startListener();
 	}

@@ -26,11 +26,22 @@ export class MemoryWriter {
 		this.buffer.set(data, oldLength);
 	}
 
+	public writeUint32(value: number, littleEndian: boolean = true) {
+		this.resize(this.buffer.length + 4);
+		this.view.setUint32(this.buffer.length - 4, value, littleEndian);
+	}
+
 	public skip(bytes: number) {
 		this.resize(this.buffer.length + bytes);
 	}
 
 	public getBuffer(): Uint8Array {
 		return this.buffer;
+	}
+
+	public writeString(value: string) {
+		this.writeUint16(value.length);
+		const encoded = new TextEncoder().encode(value);
+		this.write(encoded);
 	}
 }

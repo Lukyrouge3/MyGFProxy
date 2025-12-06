@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 
 export const Colors = {
 	Reset: "\x1b[0m",
@@ -72,9 +73,11 @@ export class Logger {
 	}
 
 	private log(msg: string) {
-		// fs.appendFileSync(
-		// 	`logs/${Logger.start_date.toISOString()}.log`,
-		// 	`${msg}\n`,
-		// );
+		const p = path.join("logs", `${Logger.start_date.toISOString().split("T")[0]}.log`);
+
+		fs.appendFileSync(
+			p,
+			`${msg}\n`,
+		);
 	}
 }

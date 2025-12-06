@@ -6,15 +6,14 @@ import { forgeToU8, u8ToForgeBytes } from "../utils/utils.ts";
 import { Logger } from "../utils/logger.ts";
 import { MemoryReader } from "../io/reader.ts";
 import { Message } from "../protocol/message.ts";
-
-const logger = new Logger("ProxyServer");
+import { MessageConstructor } from "../protocol/protocol.ts";
 
 export class ProxyServer extends ProxyBase {
 
 	private public_key: forge.pki.rsa.PublicKey | undefined;
 
-	constructor() {
-		super();
+	constructor(logger: Logger, message_mapping: Record<number, MessageConstructor>, bins_folder: string) {
+		super(logger, message_mapping, bins_folder + "/server");
 	}
 
 	protected override handle_message(message: Message): Uint8Array | null {
@@ -28,7 +27,7 @@ export class ProxyServer extends ProxyBase {
 		const data = stream.read(stream.length());
 		const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
 
-		logger.info("Handling initial packet from server.");
+		this.logger.info("Handling initial packet from server.");
 		const rsa_public_key_modulus_size = view.getUint32(0, true);
 		const rsa_public_key_modulus = data.subarray(8, 8 + rsa_public_key_modulus_size);
 		// console.log("RSA Public Key Modulus:", rsa_public_key_modulus);
@@ -36,7 +35,7 @@ export class ProxyServer extends ProxyBase {
 
 		const exponent_size = view.getUint32(4, true);
 		const exponent = data.subarray(8 + rsa_public_key_modulus_size, 8 + rsa_public_key_modulus_size + exponent_size);
-		// console.log("RSA Public Key Exponent:", exponent);
+		// this.logger.debug("RSA Public Key Exponent:", exponent);
 		// Deno.writeFileSync("server_rsa_exponent.bin", exponent);
 
 		// Deno.writeFileSync("server_rsa_exponent.bin", exponent);
@@ -56,7 +55,7 @@ export class ProxyServer extends ProxyBase {
 		custom_packet.set(proxy_modulus_bytes, 8);
 		custom_packet.set(proxy_exponent_bytes, 8 + proxy_modulus_bytes.length);
 
-		logger.info("Sending proxy RSA public key to client.");
+		this.logger.info("Sending proxy RSA public key to client.");
 		return custom_packet;
 	}
 

@@ -3,13 +3,12 @@ import { RC4 } from "../utils/rc4.ts";
 import { Logger } from "../utils/logger.ts";
 import { ProxyServer } from "./proxyServer.ts";
 import { Message } from "../protocol/message.ts";
-
-const logger = new Logger("ProxyClient");
+import { MessageConstructor } from "../protocol/protocol.ts";
 
 export class ProxyClient extends ProxyBase {
 
-	constructor() {
-		super();
+	constructor(logger: Logger, message_mapping: Record<number, MessageConstructor>, bins_folder: string) {
+		super(logger, message_mapping, bins_folder + "/client");
 	}
 
 	protected override handle_message(message: Message): Uint8Array | null {
@@ -17,9 +16,9 @@ export class ProxyClient extends ProxyBase {
 	}
 
 	public handle_initial_packet(data: Uint8Array, server: ProxyServer): Uint8Array {
-		logger.info("Handling initial packet from client.");
+		this.logger.info("Handling initial packet from client.");
 		const decrypted_rc4_key = server.decrypt_with_proxy_key(data);
-		// logger.debug("Decrypted RC4 Key from client:", decrypted_rc4_key);
+		// this.logger.debug("Decrypted RC4 Key from client:", decrypted_rc4_key);
 		this.rc4_decrypt = new RC4(decrypted_rc4_key);
 		this.rc4_encrypt = new RC4(decrypted_rc4_key);
 
