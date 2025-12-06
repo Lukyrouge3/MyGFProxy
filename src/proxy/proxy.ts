@@ -44,7 +44,8 @@ export class Proxy {
 
 	private async pump(src: Deno.Conn, dst: Deno.Conn, is_from_server = false) {
 		const buf = new Uint8Array(65535);
-
+		let packet = new Uint8Array(0);
+		let packet_size = 0;
 		while (true) {
 			try {
 				const n = await src.read(buf);
@@ -67,8 +68,6 @@ export class Proxy {
 					continue;
 				}
 
-				let packet = new Uint8Array(0);
-				let packet_size = 0;
 				while (stream.length() > 0) {
 					if (packet.length == 0) {
 						// It's a new packet

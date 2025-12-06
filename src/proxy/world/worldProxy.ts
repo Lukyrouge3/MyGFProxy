@@ -4,12 +4,16 @@ import { Proxy } from "../proxy.ts";
 import { WorldProxyClient } from "./worldProxyClient.ts";
 import { WorldProxyServer } from "./worldProxyServer.ts";
 
+export const WORLD_TARGET_PORT = 5567;
+export const WORLD_LISTEN_PORT = 5567;
+export const WORLD_TARGET_HOST = "34.123.6.172";
+
 export class WorldProxy extends Proxy {
 
 	protected override server: WorldProxyServer;
 
 	constructor() {
-		super(5567, "34.123.6.172", 5567);
+		super(WORLD_LISTEN_PORT, WORLD_TARGET_HOST, WORLD_TARGET_PORT);
 
 		this.logger = new Logger("WorldProxy");
 
