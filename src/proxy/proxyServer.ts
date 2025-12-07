@@ -8,6 +8,7 @@ import { MemoryReader } from "../io/reader.ts";
 import { Message } from "../protocol/message.ts";
 import { MessageConstructor } from "../protocol/protocol.ts";
 import { Origin } from "../generated/enums.ts";
+import { Proxy } from "./proxy.ts";
 
 export class ProxyServer extends ProxyBase {
 
@@ -17,7 +18,7 @@ export class ProxyServer extends ProxyBase {
 		super(logger, message_mapping, bins_folder + "/server", session_id, origin);
 	}
 
-	protected override handle_message(message: Message): Uint8Array | null {
+	protected override handle_message(message: Message, proxy: Proxy): Uint8Array | null {
 
 
 		return null;

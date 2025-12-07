@@ -15,6 +15,9 @@ export class LoginProxyServer extends ProxyServer {
 			);
 
 			this.logger.debug(`Modified TicketToWorldServerMessage to redirect to local world proxy at ${new_message.server_ip}.`);
+
+			// This was the last message in the login flow, so we can close the connection now.
+			this.message_count = 0;
 			return new_message.serialize();
 		}
 

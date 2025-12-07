@@ -1,3 +1,4 @@
+import { Origin } from "../generated/enums.ts";
 import { MemoryReader } from "../io/reader.ts";
 import { MessageConstructor } from "../protocol/protocol.ts";
 import { Logger } from "../utils/logger.ts";
@@ -9,11 +10,14 @@ export class Proxy {
 	public listen_port: number;
 	public server_host: string;
 	public server_port: number;
-	protected server: ProxyServer;
-	protected client: ProxyClient;
+	public server: ProxyServer;
+	public client: ProxyClient;
 	protected logger: Logger;
 	protected message_mapping: Record<number, MessageConstructor> = {};
 	protected session_id: number;
+
+	public client_dst?: Deno.Conn;
+	public server_dst?: Deno.Conn;
 
 	constructor(listen_port: number, host: string, port: number, session_id: number) {
 		this.listen_port = listen_port;
@@ -23,8 +27,8 @@ export class Proxy {
 
 		this.logger = new Logger("Proxy");
 
-		this.server = new ProxyServer(this.logger, this.message_mapping, "bins");
-		this.client = new ProxyClient(this.logger, this.message_mapping, "bins");
+		this.server = new ProxyServer(this.logger, this.message_mapping, "bins", this.session_id, Origin.LOGIN_SERVER);
+		this.client = new ProxyClient(this.logger, this.message_mapping, "bins", this.session_id, Origin.LOGIN_CLIENT);
 		// Start the async listener loop (constructor cannot be async)
 		this.startListener();
 	}
@@ -44,6 +48,27 @@ export class Proxy {
 		this.pump(server_conn, connection, true);
 	}
 
+	public writeToClient(data: Uint8Array) {
+		if (!this.client_dst) {
+			this.logger.error("Client connection not established yet");
+			return;
+		}
+
+		const packet = this.client.encrypt_packet(data);
+		this.client_dst.write(packet);
+	}
+
+	public writeToServer(data: Uint8Array, from_server = true) {
+		if (!this.server_dst) {
+			this.logger.error("Server connection not established yet");
+			return;
+		}
+
+		const packet = from_server ? this.server.encrypt_packet(data) : this.client.encrypt_packet(data);
+
+		this.server_dst.write(packet);
+	}
+
 	private async pump(src: Deno.Conn, dst: Deno.Conn, is_from_server = false) {
 		const buf = new Uint8Array(65535);
 		let packet = new Uint8Array(0);
@@ -60,11 +85,13 @@ export class Proxy {
 				const stream = new MemoryReader(buf.subarray(0, n));
 
 				if (is_from_server && this.server.message_count === 0) {
+					this.server_dst = dst;
 					await dst.write(this.server.handle_initial_packet(stream));
 					this.server.message_count++;
 					continue;
 				}
 				if (!is_from_server && this.client.message_count === 0) {
+					this.client_dst = dst;
 					await dst.write(this.client.handle_initial_packet(stream.read(stream.length()), this.server));
 					this.client.message_count++;
 					continue;
@@ -82,15 +109,10 @@ export class Proxy {
 					new_packet.set(chunk, packet.length);
 					packet = new_packet;
 					if (packet.length == packet_size) {
-						let response;
 						if (is_from_server) {
-							response = this.server.handle_raw_packet(new MemoryReader(packet));
+							this.server.handle_raw_packet(new MemoryReader(packet), this);
 						} else {
-							response = this.client.handle_raw_packet(new MemoryReader(packet));
-						}
-
-						if (response !== null) {
-							await dst.write(response);
+							this.client.handle_raw_packet(new MemoryReader(packet), this);
 						}
 
 						packet = new Uint8Array(0);
@@ -98,7 +120,7 @@ export class Proxy {
 					}
 				}
 			} catch (e) {
-				console.error("Error during read/write:", e);
+				// this.logger.info("Connection closed");
 				dst.close();
 				break;
 			}

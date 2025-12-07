@@ -7,6 +7,7 @@ import { MessageConstructor } from "../protocol/protocol.ts";
 import { Message } from "../protocol/message.ts";
 import { prisma } from "../utils/prisma.ts";
 import { Origin } from "../generated/enums.ts";
+import { Proxy } from "./proxy.ts";
 
 export abstract class ProxyBase {
 
@@ -29,16 +30,16 @@ export abstract class ProxyBase {
 		this.origin = origin;
 	}
 
-	public handle_raw_packet(data: MemoryReader): Uint8Array | null {
+	public handle_raw_packet(data: MemoryReader, proxy: Proxy, unencrypted = false): void {
 		// this.logger.debug("Received packet data:", data.getBuffer());
 
 		if (!this.rc4_decrypt || !this.rc4_encrypt) {
 			this.logger.error("RC4 ciphers not initialized.");
-			return null;
+			return;
 		}
 
 		// Decrypt
-		const decrypted_data = this.rc4_decrypt.update(data.read(data.length()));
+		const decrypted_data = unencrypted ? data.read(data.length()) : this.rc4_decrypt.update(data.read(data.length()));
 		// this.logger.debug("Received decrypted packet data:", decrypted_data);
 
 		const decrypted_stream = new MemoryReader(decrypted_data.subarray(0, decrypted_data.length));
@@ -69,7 +70,7 @@ export abstract class ProxyBase {
 				});
 
 				this.logger.info(`Handling message: ${message.toString()}`);
-				const handled_message = this.handle_message(message);
+				const handled_message = this.handle_message(message, proxy);
 				if (handled_message) {
 					handled_data = handled_message;
 				}
@@ -91,18 +92,31 @@ export abstract class ProxyBase {
 			}).then(() => { });
 		}
 		// Encrypt
-		const encrypted_data = this.rc4_encrypt.update(handled_data);
+		this.message_count++;
+
+		if (this.origin === Origin.LOGIN_SERVER || this.origin === Origin.WORLD_SERVER || this.origin === Origin.ZONE_SERVER) {
+			proxy.writeToServer(handled_data);
+		} else {
+			proxy.writeToClient(handled_data);
+		}
+	}
+
+	public encrypt_packet(data: Uint8Array): Uint8Array {
+		if (!this.rc4_encrypt) {
+			this.logger.error("RC4 encrypt cipher not initialized.");
+			return new Uint8Array(0);
+		}
+		const encrypted_data = this.rc4_encrypt.update(data);
 
 		const packet = new Uint8Array(encrypted_data.length + 2);
 		const packet_view = new DataView(packet.buffer);
 		packet_view.setUint16(0, encrypted_data.length, true);
 		packet.set(encrypted_data, 2);
 
-		this.message_count++;
+		this.logger.debug("Encrypted packet data:", packet);
+
 		return packet;
-
-
 	}
 
-	protected abstract handle_message(message: Message): Uint8Array | null;
+	protected abstract handle_message(message: Message, proxy: Proxy): Uint8Array | null;
 }

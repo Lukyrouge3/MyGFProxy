@@ -8,6 +8,7 @@ import { SelectWorldServerMessage } from "./login/selectWorldServerMessage.ts";
 import { ServerListMessage } from "./login/serverListMessage.ts";
 import { TicketToWorldServerMessage } from "./login/ticketToWorldServerMessage.ts";
 import { Message } from "./message.ts";
+import { CaptchaAnwserClientMessage } from "./world/captchaAnwserClientMessage.ts";
 import { ServerCaptchaMessage } from "./world/serverCaptchaMessage.ts";
 import { WorldHelloClientMessage } from "./world/worldhelloClientMessage.ts";
 
@@ -24,6 +25,7 @@ export const login_protocol_messages: Record<number, MessageConstructor> = {
 };
 
 export const world_protocol_messages: Record<number, MessageConstructor> = {
+	4: CaptchaAnwserClientMessage,
 	6: WorldHelloClientMessage,
 	65: ServerCaptchaMessage,
 };
