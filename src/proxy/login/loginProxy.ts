@@ -11,7 +11,7 @@ const TARGET_PORT = 6545;
 
 export class LoginProxy extends Proxy {
 
-	protected override server: LoginProxyServer;
+	public override server: LoginProxyServer;
 	protected override message_mapping: Record<number, MessageConstructor> = login_protocol_messages;
 
 	constructor(session_id: number) {

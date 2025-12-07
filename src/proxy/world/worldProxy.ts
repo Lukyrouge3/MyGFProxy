@@ -11,7 +11,7 @@ export const WORLD_TARGET_HOST = "34.123.6.172";
 
 export class WorldProxy extends Proxy {
 
-	protected override server: WorldProxyServer;
+	public override server: WorldProxyServer;
 
 	constructor(session_id: number) {
 		super(WORLD_LISTEN_PORT, WORLD_TARGET_HOST, WORLD_TARGET_PORT, session_id);

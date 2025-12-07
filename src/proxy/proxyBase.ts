@@ -39,7 +39,8 @@ export abstract class ProxyBase {
 		}
 
 		// Decrypt
-		const decrypted_data = unencrypted ? data.read(data.length()) : this.rc4_decrypt.update(data.read(data.length()));
+		const decrypted_data_raw = unencrypted ? data.read(data.length()) : this.rc4_decrypt.update(data.read(data.length()));
+		const decrypted_data = new Uint8Array(decrypted_data_raw);
 		// this.logger.debug("Received decrypted packet data:", decrypted_data);
 
 		const decrypted_stream = new MemoryReader(decrypted_data.subarray(0, decrypted_data.length));
@@ -62,7 +63,7 @@ export abstract class ProxyBase {
 						sessionId: this.session_id,
 						content: decrypted_data,
 						origin: this.origin,
-						serializedContent: message,
+						serializedContent: JSON.parse(JSON.stringify(message)),
 						order: this.message_count
 					}
 				}).then((msg) => {
