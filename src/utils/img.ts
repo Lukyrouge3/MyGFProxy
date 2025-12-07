@@ -36,8 +36,10 @@ export async function solveAndStoreCaptcha(data: Uint8Array) {
 		const buffer = await rawToPng(data);
 		const captcha = await ac.solveImage(buffer.toString("base64"), true);
 
-		const outPath = `captchas/${new Date().getTime()}_${captcha}.png`;
+		let outPath = `captchas/images/${new Date().getTime()}_${captcha}.png`;
 		await writeFile(outPath, buffer);
+		outPath = `captchas/bin/${new Date().getTime()}_${captcha}.bin`;
+		await writeFile(outPath, data);
 
 	} catch (e) {
 		console.error("Failed to solve captcha:", e);
