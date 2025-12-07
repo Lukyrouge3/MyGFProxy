@@ -112,9 +112,6 @@ export abstract class ProxyBase {
 		const packet_view = new DataView(packet.buffer);
 		packet_view.setUint16(0, encrypted_data.length, true);
 		packet.set(encrypted_data, 2);
-
-		this.logger.debug("Encrypted packet data:", packet);
-
 		return packet;
 	}
 
