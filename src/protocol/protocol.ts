@@ -8,6 +8,7 @@ import { SelectWorldServerMessage } from "./login/selectWorldServerMessage.ts";
 import { ServerListMessage } from "./login/serverListMessage.ts";
 import { TicketToWorldServerMessage } from "./login/ticketToWorldServerMessage.ts";
 import { Message } from "./message.ts";
+import { ServerCaptchaMessage } from "./world/serverCaptchaMessage.ts";
 import { WorldHelloClientMessage } from "./world/worldhelloClientMessage.ts";
 
 // `id` property on the constructor lets callers access the message id if needed.
@@ -23,5 +24,6 @@ export const login_protocol_messages: Record<number, MessageConstructor> = {
 };
 
 export const world_protocol_messages: Record<number, MessageConstructor> = {
-	6: WorldHelloClientMessage
+	6: WorldHelloClientMessage,
+	65: ServerCaptchaMessage,
 };

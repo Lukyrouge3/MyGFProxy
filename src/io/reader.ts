@@ -32,6 +32,13 @@ export class MemoryReader {
 		return new TextDecoder().decode(str_bytes);
 	}
 
+	public readStringAsArray(): Uint8Array {
+		const len = this.readUint16();
+		const str_bytes = this.buffer.subarray(this.offset, this.offset + len);
+		this.offset += len;
+		return str_bytes;
+	}
+
 	public skip(bytes: number) {
 		this.offset += bytes;
 	}

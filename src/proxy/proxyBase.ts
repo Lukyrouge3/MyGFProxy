@@ -64,6 +64,8 @@ export abstract class ProxyBase {
 						serializedContent: message,
 						order: this.message_count
 					}
+				}).then((msg) => {
+					// this.logger.debug(`Logged message ${message.constructor.name} with Command ID: ${command_id} to database. (ID: ${msg.id})`);
 				});
 
 				this.logger.info(`Handling message: ${message.toString()}`);
@@ -86,7 +88,7 @@ export abstract class ProxyBase {
 					origin: this.origin,
 					order: this.message_count
 				}
-			});
+			}).then(() => { });
 		}
 		// Encrypt
 		const encrypted_data = this.rc4_encrypt.update(handled_data);

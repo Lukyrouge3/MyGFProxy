@@ -1,3 +1,5 @@
 bins/**/*.bin
 logs/
 /src/generated/
+captchas/
+.env

@@ -5,6 +5,7 @@
     "parser": "deno run -A --watch src/parser.ts"
   },
   "imports": {
+    "@antiadmin/anticaptchaofficial": "npm:@antiadmin/anticaptchaofficial@^1.0.55",
     "@prisma/adapter-pg": "npm:@prisma/adapter-pg@^7.1.0",
     "@prisma/client": "npm:@prisma/client@^7.1.0",
     "@std/assert": "jsr:@std/assert@1",
