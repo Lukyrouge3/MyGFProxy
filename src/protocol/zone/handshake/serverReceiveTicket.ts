@@ -2,10 +2,11 @@ import { MemoryReader } from "../../../io/reader.ts";
 import { MemoryWriter } from "../../../io/writer.ts";
 import { Message } from "../../message.ts";
 
-export class WorldClientReceiveTicketToZoneServer extends Message {
-	public static override id = 40;
+export class ZoneServerReceiveTicket extends Message {
 
-	public character_id!: number;
+	public static override id = 45;
+
+	public character_id!: number; // 4bytes
 	public self_ip!: string;
 	public server_ip!: string;
 	public server_port!: number;
@@ -20,7 +21,7 @@ export class WorldClientReceiveTicketToZoneServer extends Message {
 	}
 	override serialize(): Uint8Array {
 		const writer = new MemoryWriter();
-		writer.writeUint16(WorldClientReceiveTicketToZoneServer.id);
+		writer.writeUint16(ZoneServerReceiveTicket.id);
 		writer.writeUint32(this.character_id);
 		writer.write(new Uint8Array(this.self_ip.split(".").map(octet => parseInt(octet, 10))));
 		writer.write(new Uint8Array(this.server_ip.split(".").map(octet => parseInt(octet, 10))));
@@ -29,6 +30,7 @@ export class WorldClientReceiveTicketToZoneServer extends Message {
 		return writer.getBuffer();
 	}
 	override toString(): string {
-		return `WorldClientReceiveTicketToZoneServer(character_id: ${this.character_id}, self_ip: ${this.self_ip}, server_ip: ${this.server_ip}, server_port: ${this.server_port}, ticket: [${Array.from(this.ticket).join(", ")}])`;
+		return `ZoneServerReceiveTicket(character_id: ${this.character_id}, self_ip: ${this.self_ip}, server_ip: ${this.server_ip}, server_port: ${this.server_port}, ticket: [${Array.from(this.ticket).join(", ")}])`;
 	}
+
 }

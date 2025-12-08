@@ -7,6 +7,7 @@ import { ProxyServer } from "../proxyServer.ts";
 import { WorldServerCaptchaReturn } from "../../protocol/world/captcha/serverCaptchaReturn.ts";
 import { Proxy } from "../proxy.ts";
 import { MemoryReader } from "../../io/reader.ts";
+import { WorldClientReceiveTicketToZoneServer } from "../../protocol/world/index.ts";
 
 
 export class WorldProxyServer extends ProxyServer {
@@ -34,7 +35,10 @@ export class WorldProxyServer extends ProxyServer {
 
 				this.captchaParts.clear();
 			}
-			return null;
+		} else if (message instanceof WorldClientReceiveTicketToZoneServer) {
+			message.server_ip = "192.168.1.183";
+
+			return message.serialize();
 		}
 
 		return null;
