@@ -85,4 +85,10 @@ export class MemoryReader {
 		this.offset += 4;
 		return value;
 	}
+
+	public readFloat32(littleEndian: boolean = true): number {
+		const value = this.view.getFloat32(0, littleEndian);
+		this.offset += 4;
+		return value;
+	}
 }

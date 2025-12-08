@@ -9,7 +9,7 @@ import { ServerListMessage } from "./login/serverListMessage.ts";
 import { TicketToWorldServerMessage } from "./login/ticketToWorldServerMessage.ts";
 import { Message } from "./message.ts";
 import { WorldClientCaptcha, WorldClientGetCharacters, WorldClientGetMotionEndTime, WorldClientHello, WorldClientReceiveTicketToZoneServer, WorldClientResetTime, WorldServerCaptchaReturn, WorldServerLoginCharacter, WorldServerReceiveTicket } from "./world/index.ts";
-import { ZoneServerReceiveTicket } from "./zone/index.ts";
+import { ZoneClientMoveChar, ZoneServerReceiveTicket } from "./zone/index.ts";
 
 
 // `id` property on the constructor lets callers access the message id if needed.
@@ -37,5 +37,6 @@ export const world_protocol_messages: Record<number, MessageConstructor> = {
 };
 
 export const zone_protocol_messages: Record<number, MessageConstructor> = {
-	45: ZoneServerReceiveTicket
+	45: ZoneServerReceiveTicket,
+	343: ZoneClientMoveChar,
 };
