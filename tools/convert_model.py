@@ -34,7 +34,7 @@ class CaptchaCNN(nn.Module):
         return x.view(-1, 4, 10)
 
 model = CaptchaCNN()
-model.load_state_dict(torch.load("captcha_model.pt", map_location="cpu"))
+model.load_state_dict(torch.load("model/captcha_model.pt", map_location="cpu"))
 model.eval()
 
 dummy_input = torch.randn(1, 1, 64, 170)
@@ -42,10 +42,24 @@ dummy_input = torch.randn(1, 1, 64, 170)
 torch.onnx.export(
     model,
     dummy_input,
-    "captcha_model.onnx",
+    "model/captcha_model.onnx",
     input_names=["input"],
     output_names=["output"],
     opset_version=18
 )
 
 print("Exported captcha_model.onnx")
+
+import onnx
+
+print("Loading ONNX...")
+model = onnx.load("model/captcha_model.onnx", load_external_data=True)
+
+print("Saving as single-file ONNX...")
+onnx.save_model(
+    model,
+    "model/captcha_model_single.onnx",
+    save_as_external_data=False
+)
+
+print("✅ Packed into captcha_model_single.onnx")

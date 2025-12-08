@@ -18,7 +18,7 @@ BATCH_SIZE = 32
 EPOCHS = 15
 LR = 0.001
 
-DATA_DIR = "captchas/images"
+DATA_DIR = "captchas/bins"
 TRAIN_RATIO = 0.8
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -38,16 +38,20 @@ class CaptchaDataset(Dataset):
         path = self.files[idx]
         filename = os.path.basename(path)
 
-        # --- Extract label from filename: {timestamp}_{label}.png
-        label_str = filename.split("_")[1].replace(".png", "")
+        # label from filename: timestamp_3677.bin
+        label_str = filename.split("_")[1].replace(".bin", "")
         label = torch.tensor([int(c) for c in label_str], dtype=torch.long)
 
-        # --- Load RGBA -> Grayscale
-        img = Image.open(path).convert("L")
-        img = np.array(img, dtype=np.float32) / 255.0
-        img = torch.tensor(img).unsqueeze(0)  # (1, 64, 170)
+        # raw grayscale buffer
+        img = np.fromfile(path, dtype=np.uint8)
+
+        # reshape to (64, 170)
+        img = img.reshape(64, 170).astype(np.float32) / 255.0
+
+        img = torch.tensor(img).unsqueeze(0)
 
         return img, label
+
 
 # -----------------------
 # MODEL
@@ -85,7 +89,7 @@ class CaptchaCNN(nn.Module):
 all_images = [
     os.path.join(DATA_DIR, f)
     for f in os.listdir(DATA_DIR)
-    if f.endswith(".png")
+    if f.endswith(".bin")
 ]
 
 random.shuffle(all_images)
