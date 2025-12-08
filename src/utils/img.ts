@@ -10,6 +10,9 @@ const HEIGHT = 64;
 
 ac.setAPIKey(Deno.env.get("ANTI_CAPTCHA_KEY") || "");
 ac.shutUp();
+ac.settings.numeric = 1;
+ac.settings.minLength = 4;
+ac.settings.maxLength = 4;
 
 export async function rawToPng(data: Uint8Array) {
 	if (data.length !== WIDTH * HEIGHT) {
@@ -38,7 +41,7 @@ export async function solveAndStoreCaptcha(data: Uint8Array) {
 
 		let outPath = `captchas/images/${new Date().getTime()}_${captcha}.png`;
 		await writeFile(outPath, buffer);
-		outPath = `captchas/bin/${new Date().getTime()}_${captcha}.bin`;
+		outPath = `captchas/bins/${new Date().getTime()}_${captcha}.bin`;
 		await writeFile(outPath, data);
 
 	} catch (e) {

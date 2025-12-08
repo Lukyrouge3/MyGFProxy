@@ -1,4 +1,5 @@
 import { MemoryReader } from "../../io/reader.ts";
+import { MemoryWriter } from "../../io/writer.ts";
 import { Message } from "../message.ts";
 
 export class HelloServerMessage extends Message {
@@ -10,7 +11,10 @@ export class HelloServerMessage extends Message {
 		this.unknown = data.read(4);
 	}
 	override serialize(): Uint8Array {
-		throw new Error("Method not implemented.");
+		const writer = new MemoryWriter();
+		writer.writeUint16(HelloServerMessage.id);
+		writer.write(this.unknown);
+		return writer.getBuffer();
 	}
 	override toString(): string {
 		return `HelloServerMessage()`;

@@ -44,6 +44,8 @@ export class Proxy {
 	private async handle_client(connection: Deno.TcpConn) {
 		const server_conn = await Deno.connect({ hostname: this.server_host, port: this.server_port });
 
+		this.server_dst = undefined;
+		this.client_dst = undefined;
 		this.pump(connection, server_conn, false);
 		this.pump(server_conn, connection, true);
 	}

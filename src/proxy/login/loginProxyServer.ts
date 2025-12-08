@@ -1,10 +1,11 @@
 import { TicketToWorldServerMessage } from "../../protocol/login/ticketToWorldServerMessage.ts";
 import { Message } from "../../protocol/message.ts";
+import { Proxy } from "../proxy.ts";
 import { ProxyServer } from "../proxyServer.ts";
 
 export class LoginProxyServer extends ProxyServer {
 
-	protected override handle_message(message: Message): Uint8Array | null {
+	protected override handle_message(message: Message, proxy: Proxy): Uint8Array | null {
 		if (message instanceof TicketToWorldServerMessage) {
 			const new_message = new TicketToWorldServerMessage(
 				message.unknown_1,
@@ -17,7 +18,8 @@ export class LoginProxyServer extends ProxyServer {
 			this.logger.debug(`Modified TicketToWorldServerMessage to redirect to local world proxy at ${new_message.server_ip}.`);
 
 			// This was the last message in the login flow, so we can close the connection now.
-			this.message_count = 0;
+			this.message_count = -1;
+			proxy.client.message_count = 0;
 			return new_message.serialize();
 		}
 

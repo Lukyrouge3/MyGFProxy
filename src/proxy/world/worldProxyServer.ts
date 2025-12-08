@@ -34,20 +34,21 @@ export class WorldProxyServer extends ProxyServer {
 				msg.answer = "0000";
 
 				//wait 1 second before sending the answer
-				setTimeout(() => {
 
 
-					proxy.client.handle_raw_packet(new MemoryReader(msg.serialize()), proxy, true);
-				}, 1000);
+				proxy.client.handle_raw_packet(new MemoryReader(msg.serialize()), proxy, true);
 
 
 				this.captchaParts.clear();
 				this.captchaCount++;
 			}
 			if (this.captchaCount === 3) {
+				this.logger.info("Solved 3 captchas, resetting connection.");
+
 				// After solving 3 captchas, reset the count and close the connection
 				this.captchaCount = 0;
-				this.message_count = 0;
+				this.message_count = -1;
+				proxy.client.message_count = 0;
 			}
 			return null;
 		}
