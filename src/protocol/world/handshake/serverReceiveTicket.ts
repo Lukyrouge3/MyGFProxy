@@ -1,8 +1,8 @@
-import { MemoryReader } from "../../io/reader.ts";
-import { MemoryWriter } from "../../io/writer.ts";
-import { Message } from "../message.ts";
+import { MemoryReader } from "../../../io/reader.ts";
+import { MemoryWriter } from "../../../io/writer.ts";
+import { Message } from "../../message.ts";
 
-export class WorldHelloClientMessage extends Message {
+export class WorldServerReceiveTicket extends Message {
 
 	public static override id = 6;
 
@@ -29,7 +29,7 @@ export class WorldHelloClientMessage extends Message {
 	}
 	override serialize(): Uint8Array {
 		const writer = new MemoryWriter();
-		writer.writeUint16(WorldHelloClientMessage.id);
+		writer.writeUint16(WorldServerReceiveTicket.id);
 		writer.write(this.unknown_1);
 		writer.write(new Uint8Array(this.self_ip.split(".").map(octet => parseInt(octet, 10))));
 		writer.write(new Uint8Array(this.server_ip.split(".").map(octet => parseInt(octet, 10))));
@@ -42,7 +42,7 @@ export class WorldHelloClientMessage extends Message {
 		return writer.getBuffer();
 	}
 	override toString(): string {
-		return `HelloClientMessage(self_ip: ${this.self_ip}, server_ip: ${this.server_ip}, server_port: ${this.server_port}, ticket: [${Array.from(this.ticket).join(", ")}], lang: ${this.lang}, cpu: ${this.cpu})`;
+		return `WorldServerReceiveTicket(self_ip: ${this.self_ip}, server_ip: ${this.server_ip}, server_port: ${this.server_port}, ticket: [${Array.from(this.ticket).join(", ")}], lang: ${this.lang}, cpu: ${this.cpu})`;
 	}
 
 }

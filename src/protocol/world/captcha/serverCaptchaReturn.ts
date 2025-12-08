@@ -1,8 +1,8 @@
-import { MemoryReader } from "../../io/reader.ts";
-import { MemoryWriter } from "../../io/writer.ts";
-import { Message } from "../message.ts";
+import { MemoryReader } from "../../../io/reader.ts";
+import { MemoryWriter } from "../../../io/writer.ts";
+import { Message } from "../../message.ts";
 
-export class CaptchaAnwserClientMessage extends Message {
+export class WorldServerCaptchaReturn extends Message {
 
 	public static override id = 4;
 
@@ -13,11 +13,11 @@ export class CaptchaAnwserClientMessage extends Message {
 	}
 	override serialize(): Uint8Array {
 		const writer = new MemoryWriter();
-		writer.writeUint16(CaptchaAnwserClientMessage.id);
+		writer.writeUint16(WorldServerCaptchaReturn.id);
 		writer.writeString(this.answer);
 		return writer.getBuffer();
 	}
 	override toString(): string {
-		return `CaptchaAnwserClientMessage(answer=${this.answer})`;
+		return `WorldServerCaptchaReturn(answer=${this.answer})`;
 	}
 }

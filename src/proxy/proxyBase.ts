@@ -47,7 +47,7 @@ export abstract class ProxyBase {
 
 		let handled_data = decrypted_stream.getBuffer();
 		const command_id = decrypted_stream.readUint16();
-		// Deno.writeFileSync(`${this.bins_folder}/command_${command_id}_packet.bin`, decrypted_data);
+		Deno.writeFileSync(`${this.bins_folder}/command_${command_id}_packet.bin`, decrypted_data);
 
 		if (this.message_mapping[command_id]) {
 			try {

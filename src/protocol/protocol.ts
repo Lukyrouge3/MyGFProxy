@@ -8,9 +8,8 @@ import { SelectWorldServerMessage } from "./login/selectWorldServerMessage.ts";
 import { ServerListMessage } from "./login/serverListMessage.ts";
 import { TicketToWorldServerMessage } from "./login/ticketToWorldServerMessage.ts";
 import { Message } from "./message.ts";
-import { CaptchaAnwserClientMessage } from "./world/captchaAnwserClientMessage.ts";
-import { ServerCaptchaMessage } from "./world/serverCaptchaMessage.ts";
-import { WorldHelloClientMessage } from "./world/worldhelloClientMessage.ts";
+import { WorldClientCaptcha, WorldClientGetCharacters, WorldClientGetMotionEndTime, WorldClientHello, WorldClientReceiveTicketToZoneServer, WorldClientResetTime, WorldServerCaptchaReturn, WorldServerLoginCharacter, WorldServerReceiveTicket } from "./world/index.ts";
+
 
 // `id` property on the constructor lets callers access the message id if needed.
 export type MessageConstructor = { new(): Message; id: number };
@@ -25,7 +24,13 @@ export const login_protocol_messages: Record<number, MessageConstructor> = {
 };
 
 export const world_protocol_messages: Record<number, MessageConstructor> = {
-	4: CaptchaAnwserClientMessage,
-	6: WorldHelloClientMessage,
-	65: ServerCaptchaMessage,
+	4: WorldServerCaptchaReturn,
+	6: WorldServerReceiveTicket,
+	9: WorldServerLoginCharacter,
+	38: WorldClientHello,
+	40: WorldClientReceiveTicketToZoneServer,
+	41: WorldClientGetCharacters,
+	43: WorldClientResetTime,
+	65: WorldClientCaptcha,
+	80: WorldClientGetMotionEndTime,
 };
