@@ -8,6 +8,7 @@ import { Message } from "../protocol/message.ts";
 import { prisma } from "../utils/prisma.ts";
 import { Origin } from "../generated/enums.ts";
 import { Proxy } from "./proxy.ts";
+import { socket } from "../utils/socket.ts";
 
 export abstract class ProxyBase {
 
@@ -67,6 +68,7 @@ export abstract class ProxyBase {
 						order: this.message_count
 					}
 				}).then((msg) => {
+					socket.broadcast(msg);
 					// this.logger.debug(`Logged message ${message.constructor.name} with Command ID: ${command_id} to database. (ID: ${msg.id})`);
 				});
 
@@ -90,7 +92,7 @@ export abstract class ProxyBase {
 					origin: this.origin,
 					order: this.message_count
 				}
-			}).then(() => { });
+			}).then((msg) => { socket.broadcast(msg); });
 		}
 		// Encrypt
 		this.message_count++;

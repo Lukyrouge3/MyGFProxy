@@ -5,6 +5,7 @@ import { WorldProxy } from "./proxy/world/worldProxy.ts";
 import { ZoneProxy } from "./proxy/zone/zoneProxy.ts";
 import { Logger } from "./utils/logger.ts";
 import { prisma } from "./utils/prisma.ts";
+import { socket } from "./utils/socket.ts";
 
 const logger = new Logger("Main");
 
@@ -17,3 +18,6 @@ const world_proxy = new WorldProxy(session.id);
 logger.info("Started World proxy");
 const zone_proxy = new ZoneProxy(session.id);
 logger.info("Started Zone proxy");
+
+socket.start();
+logger.info("Started WebSocket server on port 4000");

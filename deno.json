@@ -16,6 +16,7 @@
     "gnablib": "npm:gnablib@^0.7.29",
     "node-forge": "npm:node-forge@^1.3.2",
     "onnxruntime-web": "npm:onnxruntime-web@^1.23.2",
-    "windivert": "npm:windivert@^1.0.2"
+    "windivert": "npm:windivert@^1.0.2",
+    "ws": "npm:ws@^8.18.3"
   }
 }

@@ -11,6 +11,7 @@ export class ZoneClientMoveChar extends Message {
 	public dy!: number; // float
 	public faceDir!: number; // float
 
+
 	override deserialize(data: MemoryReader): void {
 		this.character_id = data.readUint32();
 		this.dx = data.readFloat32();
